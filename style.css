@@ -731,6 +731,10 @@ p {
   z-index: 200;
 }
 
+#pannello-sovrapposto.nascosto {
+  display: none;
+}
+
 #pannello-ok {
   background-color: var(--colore-sfondo-elevato);
   border: 1px solid var(--colore-accento);
