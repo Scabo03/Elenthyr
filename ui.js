@@ -1447,8 +1447,9 @@ function _registraEventListener() {
 // Mostra i tre passi narrativi in sequenza (TESTI_INTRODUZIONE)
 // prima di passare alla schermata principale del giorno.
 // ------------------------------------------------------------
-function mostraIntroduzione() {
+function mostraIntroduzione(indiceInizio) {
   const passi = TESTI_INTRODUZIONE;
+  const _indicePartenza = (typeof indiceInizio === 'number' && indiceInizio >= 0) ? indiceInizio : 0;
 
   function mostraPasso(indice) {
     if (indice >= passi.length) {
@@ -1499,7 +1500,78 @@ function mostraIntroduzione() {
     }
   }
 
-  mostraPasso(0);
+  mostraPasso(_indicePartenza);
+}
+
+
+// ------------------------------------------------------------
+// SCHERMATA DI BENVENUTO — Prima schermata mostrata all'avvio
+// Chiamata come prima cosa da avviaUI(), prima di qualsiasi
+// altra schermata. Il listener su "Prosegui" è registrato prima
+// che il pulsante sia visibile nel DOM.
+// ------------------------------------------------------------
+function _mostraSchermataBenvenuto() {
+  if (!dom.contenutoPrincipale) return;
+
+  const contenitore = document.createElement('div');
+  contenitore.className = 'schermata-benvenuto';
+
+  // Titolo del gioco
+  const titolo = document.createElement('h1');
+  titolo.className   = 'benvenuto-titolo';
+  titolo.textContent = 'Elenthyr';
+  titolo.setAttribute('tabindex', '-1');
+  contenitore.appendChild(titolo);
+
+  // Testo narrativo introduttivo: primo passo di TESTI_INTRODUZIONE
+  const primoTesto = (typeof TESTI_INTRODUZIONE !== 'undefined' && TESTI_INTRODUZIONE.length > 0)
+    ? TESTI_INTRODUZIONE[0].testo
+    : 'Un\'antica accademia di maghi e studiosi ti attende.';
+  const paragrafo = document.createElement('p');
+  paragrafo.className   = 'benvenuto-testo';
+  paragrafo.textContent = primoTesto;
+  contenitore.appendChild(paragrafo);
+
+  // Pulsante Prosegui — il listener è registrato PRIMA che il pulsante
+  // sia aggiunto al DOM e prima che replaceChildren lo renda visibile.
+  const pulsante = document.createElement('button');
+  pulsante.className = 'pulsante-avanza';
+  pulsante.type      = 'button';
+  pulsante.textContent = 'Prosegui';
+  pulsante.setAttribute('aria-label', 'Prosegui');
+
+  pulsante.addEventListener('click', () => {
+    Audio.riprendi();
+    aggiornaIndicatoreTemporale();
+    aggiornaCalendario();
+
+    if (!introGiaMostrata()) {
+      // Primo avvio: mostra il pannello con il contesto del gioco.
+      // Il callback Ok avvia la sequenza introduttiva dal secondo passo,
+      // poiché il primo è già stato mostrato nella schermata di benvenuto.
+      const testoContesto =
+        'Sei stato ammesso per merito all\'Accademia di Elenthyr, ' +
+        'un antico ordine di maghi e studiosi. ' +
+        'Le tue scelte hanno peso reale — alcune apriranno possibilità, ' +
+        'altre le precluderanno. ' +
+        'Non esiste un finale predefinito.';
+      mostraPannello(testoContesto, () => {
+        mostraIntroduzione(1);
+      });
+    } else {
+      // Ritorno: vai direttamente alla schermata principale
+      renderizzaSchermataGiorno();
+    }
+  });
+
+  contenitore.appendChild(pulsante);
+
+  // Rende visibile la schermata — dopo che il listener è stato registrato
+  dom.contenutoPrincipale.replaceChildren(contenitore);
+
+  // Focus automatico al pulsante Prosegui
+  pulsante.setAttribute('tabindex', '-1');
+  pulsante.focus();
 }
 
 
@@ -1509,15 +1581,10 @@ function mostraIntroduzione() {
 // ------------------------------------------------------------
 function avviaUI() {
   inizializzaMotore();
-  aggiornaIndicatoreTemporale();
-  aggiornaCalendario();
-
-  // Mostra l'introduzione solo per le nuove partite
-  if (!introGiaMostrata()) {
-    mostraIntroduzione();
-  } else {
-    renderizzaSchermataGiorno();
-  }
+  // La schermata di benvenuto è sempre la prima cosa mostrata.
+  // aggiornaIndicatoreTemporale() e aggiornaCalendario() sono chiamate
+  // nel listener di "Prosegui", dopo che il giocatore ha interagito.
+  _mostraSchermataBenvenuto();
 }
 
 
