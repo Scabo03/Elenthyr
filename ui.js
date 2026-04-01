@@ -59,6 +59,10 @@ const dom = {
   pulsanteChiudiImpost:    document.getElementById('pulsante-chiudi-impostazioni')
 };
 
+// Callback da invocare quando l'utente chiude il pannello sovrapposto.
+// Assegnata da mostraPannello, letta dal listener fisso in _registraEventListener.
+let _callbackPannello = null;
+
 
 // ------------------------------------------------------------
 // ANNUNCI VOICEOVER
@@ -598,6 +602,9 @@ function _mostraSottofondoAVoiceOver() {
 function mostraPannello(testo, callbackChiusura) {
   if (!dom.pannelloSovrapposto || !dom.pannelloContenuto) return;
 
+  // Memorizza il callback — verrà letto dal listener fisso su pannelloOk
+  _callbackPannello = callbackChiusura || null;
+
   dom.pannelloContenuto.textContent = testo;
   dom.pannelloSovrapposto.classList.remove('nascosto');
 
@@ -607,15 +614,6 @@ function mostraPannello(testo, callbackChiusura) {
 
   // Focus al pulsante Ok (primo nel DOM del pannello)
   dom.pannelloOk.focus();
-
-  // Gestore chiusura
-  const chiudi = () => {
-    dom.pannelloSovrapposto.classList.add('nascosto');
-    _mostraSottofondoAVoiceOver();
-    if (callbackChiusura) callbackChiusura();
-  };
-
-  dom.pannelloOk.addEventListener('click', chiudi, { once: true });
 }
 
 
@@ -1324,6 +1322,18 @@ function _avanzaGiornoAutomatico() {
 // Chiamata una sola volta all'inizializzazione.
 // ------------------------------------------------------------
 function _registraEventListener() {
+  // Pulsante Ok del pannello sovrapposto — listener fisso, registrato una sola volta
+  // all'avvio quando il DOM è sicuramente pronto. Risolve la race condition in cui
+  // mostraPannello veniva chiamata prima che addEventListener potesse agganciarsi.
+  dom.pannelloOk.addEventListener('click', () => {
+    if (!dom.pannelloSovrapposto || dom.pannelloSovrapposto.classList.contains('nascosto')) return;
+    dom.pannelloSovrapposto.classList.add('nascosto');
+    _mostraSottofondoAVoiceOver();
+    const cb = _callbackPannello;
+    _callbackPannello = null;
+    if (cb) cb();
+  });
+
   // Pulsante impostazioni
   dom.pulsanteImpostazioni.addEventListener('click', () => {
     Audio.riprendi();
