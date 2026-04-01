@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- PWA e Safari iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Elenthyr">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f0e17">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icone Apple (da creare nella cartella icons/) -->
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+
+  <!-- Foglio di stile -->
+  <link rel="stylesheet" href="style.css">
+
+  <title>Elenthyr</title>
+</head>
+<body>
+
+  <!-- ============================================================
+       FASCIA SUPERIORE PERMANENTE
+       Presente in tutte le schermate, mai nascosta.
+       VoiceOver legge questa fascia come gruppo con label completo.
+  ============================================================ -->
+  <header id="fascia-superiore" role="banner">
+    <div
+      id="indicatore-temporale"
+      role="group"
+      aria-label="Periodo attuale: Autunno, Giorno 1, Semestre 1"
+    >
+      <span id="testo-temporale" aria-hidden="true">Autunno · Giorno 1 · S1</span>
+    </div>
+
+    <button
+      id="pulsante-impostazioni"
+      type="button"
+      aria-label="Apri impostazioni"
+    >
+      <span aria-hidden="true">⚙</span>
+    </button>
+  </header>
+
+
+  <!-- ============================================================
+       FASCIA CALENDARIO
+       3-4 box orizzontali con giorno corrente e prossimi giorni.
+       Popolata da ui.js.
+  ============================================================ -->
+  <nav
+    id="fascia-calendario"
+    role="navigation"
+    aria-label="Calendario prossimi giorni"
+  >
+    <!-- Contenuto generato da ui.js -->
+  </nav>
+
+
+  <!-- ============================================================
+       CONTENUTO PRINCIPALE
+       Popolato da ui.js in base allo stato di gioco corrente.
+  ============================================================ -->
+  <main id="contenuto-principale" role="main" aria-label="Contenuto principale del gioco">
+    <!-- Contenuto generato da ui.js -->
+  </main>
+
+
+  <!-- ============================================================
+       SCHERMATA IMPOSTAZIONI
+       Nascosta per default. Aperta da pulsante-impostazioni.
+  ============================================================ -->
+  <div
+    id="schermata-impostazioni"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="impostazioni-titolo"
+    class="nascosto"
+  >
+    <h2 id="impostazioni-titolo">Impostazioni</h2>
+
+    <div role="group" aria-label="Controlli volume">
+      <div class="controllo-volume">
+        <label for="volume-musica">Volume musica</label>
+        <input
+          type="range"
+          id="volume-musica"
+          min="0"
+          max="100"
+          value="70"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="70"
+          aria-label="Volume musica: 70%"
+        >
+      </div>
+
+      <div class="controllo-volume">
+        <label for="volume-ambientale">Volume audio ambientale</label>
+        <input
+          type="range"
+          id="volume-ambientale"
+          min="0"
+          max="100"
+          value="60"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="60"
+          aria-label="Volume audio ambientale: 60%"
+        >
+      </div>
+
+      <div class="controllo-volume">
+        <label for="volume-voci">Volume voci</label>
+        <input
+          type="range"
+          id="volume-voci"
+          min="0"
+          max="100"
+          value="80"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="80"
+          aria-label="Volume voci: 80%"
+        >
+      </div>
+    </div>
+
+    <div role="group" aria-label="Gestione salvataggio">
+      <button type="button" id="pulsante-esporta-salvataggio">Esporta salvataggio</button>
+      <button type="button" id="pulsante-importa-salvataggio">Importa salvataggio</button>
+      <input
+        type="file"
+        id="input-importa-salvataggio"
+        accept=".txt"
+        class="sr-only"
+        aria-label="Seleziona file di salvataggio da importare"
+      >
+      <!-- Conferma importazione — visibile solo durante il flusso di import -->
+      <div
+        id="zona-conferma-import"
+        class="nascosto"
+        role="group"
+        aria-label="Conferma importazione salvataggio"
+      >
+        <p id="testo-conferma-import">
+          Importare questo file sovrascriverà il salvataggio attuale. Vuoi continuare?
+        </p>
+        <button
+          type="button"
+          id="pulsante-conferma-import"
+          aria-label="Conferma importazione e sovrascrivi il salvataggio attuale"
+        >Conferma</button>
+        <button
+          type="button"
+          id="pulsante-annulla-import"
+          aria-label="Annulla importazione e torna alle impostazioni"
+        >Annulla</button>
+      </div>
+    </div>
+
+    <p id="versione-gioco" role="note">Versione 0.1.0</p>
+
+    <button type="button" id="pulsante-chiudi-impostazioni" aria-label="Chiudi impostazioni">
+      Chiudi
+    </button>
+  </div>
+
+
+  <!-- ============================================================
+       PANNELLO SOVRAPPOSTO
+       Per notifiche del narratore, avvisi di sistema, messaggi informativi.
+       Il pulsante Ok è SEMPRE il primo elemento nel DOM.
+       Mentre aperto, il contenuto sottostante è inerte.
+  ============================================================ -->
+  <div
+    id="pannello-sovrapposto"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pannello-contenuto"
+    class="nascosto"
+  >
+    <!-- Ok prima del contenuto nel DOM, per VoiceOver -->
+    <button
+      type="button"
+      id="pannello-ok"
+      aria-label="Chiudi messaggio"
+    >
+      Ok
+    </button>
+    <div
+      id="pannello-contenuto"
+      aria-live="polite"
+    >
+      <!-- Testo generato da ui.js -->
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       REGIONE ARIA-LIVE PER ANNUNCI VOICEOVER
+       Visivamente nascosta, usata per comunicare aggiornamenti
+       dinamici a VoiceOver senza spostare il focus.
+  ============================================================ -->
+  <div
+    id="annunci-voiceover"
+    aria-live="polite"
+    aria-atomic="true"
+    class="sr-only"
+    role="status"
+  ></div>
+
+
+  <!-- ============================================================
+       REGISTRAZIONE SERVICE WORKER
+       Script inline sincrono — non defer, eseguito subito.
+  ============================================================ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js').catch(function (err) {
+          console.warn('[Elenthyr] Service Worker non registrato:', err);
+        });
+      });
+    }
+  </script>
+
+
+  <!-- ============================================================
+       SCRIPT DEL GIOCO
+       Ordine rigido. Tutti con defer per compatibilità Safari iOS.
+       Non modificare l'ordine.
+  ============================================================ -->
+  <script src="data.js" defer></script>
+  <script src="narrative.js" defer></script>
+  <script src="dialoghi.js" defer></script>
+  <script src="audio.js" defer></script>
+  <script src="game-engine.js" defer></script>
+  <script src="minigames.js" defer></script>
+  <script src="ui.js" defer></script>
+
+  <!-- Gli Scavi — strumento di test, da rimuovere prima della versione finale -->
+  <script src="scavi-test.js" defer></script>
+
+</body>
+</html>

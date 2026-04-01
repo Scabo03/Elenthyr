@@ -1,0 +1,1702 @@
+/* ============================================================
+   STYLE.CSS — Elenthyr
+   Stile, layout, decorazioni visive tematiche.
+   Nessuna logica di gioco. Nessun !important su classi
+   di visibilità gestite da JavaScript.
+   Compatibile Safari iOS 14+.
+   ============================================================ */
+
+
+/* ============================================================
+   VARIABILI CSS
+   ============================================================ */
+:root {
+  /* Colori base dell'interfaccia */
+  --colore-sfondo:             #0f0e17;
+  --colore-sfondo-secondario:  #1a1929;
+  --colore-sfondo-elevato:     #252438;
+  --colore-testo:              #fffffe;
+  --colore-testo-secondario:   #a7a9be;
+  --colore-testo-attenuato:    #6b6d85;
+  --colore-accento:            #c9a84c;  /* oro accademico */
+  --colore-accento-scuro:      #8c6e2a;
+  --colore-bordo:              #2a2a4a;
+  --colore-bordo-chiaro:       #3d3d62;
+  --colore-errore:             #e05252;
+  --colore-successo:           #52c07a;
+
+  /* Colori tematici dei luoghi — vividi e saturi */
+  --colore-aule:               #e07b39;  /* arancione */
+  --colore-biblioteca:         #1a73e8;  /* blu elettrico */
+  --colore-alchimia:           #2d9e5f;  /* verde */
+  --colore-incantamento:       #8b3fc4;  /* viola */
+  --colore-sala-rituale:       #c42b38;  /* rosso rubino */
+  --colore-cortile:            #3a9bd4;  /* azzurro cielo */
+  --colore-torre:              #1a3a6b;  /* blu notte */
+  --colore-archivio:           #c49a2b;  /* giallo ocra */
+  --colore-scavi:              #6b7280;  /* grigio pietra */
+
+  /* Luogo corrente — sovrascritta da ui.js */
+  --colore-luogo-corrente:     var(--colore-accento);
+
+  /* Layout */
+  --altezza-fascia-superiore:  3rem;
+  --altezza-fascia-calendario: 5.5rem;
+  --padding-base:              1rem;
+  --padding-piccolo:           0.5rem;
+  --raggio-bordo:              0.5rem;
+  --raggio-bordo-grande:       1rem;
+
+  /* Tipografia */
+  --font-narrativo:    Georgia, 'Times New Roman', serif;
+  --font-interfaccia:  system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --testo-base:        1rem;
+  --testo-piccolo:     0.875rem;
+  --testo-grande:      1.125rem;
+  --testo-titolo:      1.375rem;
+  --altezza-riga:      1.6;
+
+  /* Transizioni */
+  --durata-transizione-breve:  150ms;
+  --durata-transizione:        300ms;
+  --durata-transizione-lenta:  500ms;
+  --curva-transizione:         ease-in-out;
+
+  /* Opacità */
+  --opacita-disabilitato:      0.4;
+  --opacita-attenuato:         0.6;
+
+  /* Ombre */
+  --ombra-panel:   0 4px 24px rgba(0, 0, 0, 0.6);
+  --ombra-button:  0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ============================================================
+   RESET BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  /* Previene zoom automatico su input su iOS */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-interfaccia);
+  font-size: var(--testo-base);
+  line-height: var(--altezza-riga);
+  color: var(--colore-testo);
+  background-color: var(--colore-sfondo);
+  /* Fallback vh prima di dvh — compatibilità Safari < 16 */
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  /* Scorrimento fluido su iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-narrativo);
+  font-weight: normal;
+  color: var(--colore-testo);
+}
+
+button {
+  font-family: var(--font-interfaccia);
+  font-size: var(--testo-base);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--colore-accento);
+}
+
+p {
+  font-family: var(--font-narrativo);
+  line-height: var(--altezza-riga);
+}
+
+
+/* ============================================================
+   UTILITÀ ACCESSIBILITÀ
+   ============================================================ */
+
+/* Visivamente nascosto ma leggibile da VoiceOver */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Nasconde visivamente e da VoiceOver.
+   NON usare !important — questa classe è gestita da JavaScript. */
+.nascosto {
+  display: none;
+}
+
+/* Elemento visivamente attenuato (non accessibile, non interattivo) */
+.non-accessibile {
+  opacity: var(--opacita-attenuato);
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Focus visibile — Safari iOS < 15.4 non supporta :focus-visible,
+   quindi aggiungiamo sempre anche :focus */
+:focus,
+:focus-visible {
+  outline: 2px solid var(--colore-accento);
+  outline-offset: 2px;
+}
+
+/* Rimuove outline di default solo quando non a tastiera su browser moderni */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+
+/* ============================================================
+   FASCIA SUPERIORE PERMANENTE
+   Fissa in cima. Usa top/left/right espliciti (no inset).
+   ============================================================ */
+#fascia-superiore {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--altezza-fascia-superiore);
+  background-color: var(--colore-sfondo-secondario);
+  border-bottom: 1px solid var(--colore-bordo);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--padding-base);
+  z-index: 100;
+  /* Supporto notch iPhone */
+  padding-left: max(var(--padding-base), env(safe-area-inset-left));
+  padding-right: max(var(--padding-base), env(safe-area-inset-right));
+}
+
+#indicatore-temporale {
+  font-family: var(--font-interfaccia);
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  letter-spacing: 0.03em;
+}
+
+#pulsante-impostazioni {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: var(--colore-testo-secondario);
+  font-size: 1.125rem;
+  transition: color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+#pulsante-impostazioni:hover,
+#pulsante-impostazioni:focus,
+#pulsante-impostazioni:focus-visible {
+  color: var(--colore-testo);
+  background-color: var(--colore-sfondo-elevato);
+}
+
+
+/* ============================================================
+   FASCIA CALENDARIO
+   Sotto la fascia superiore, fissa.
+   ============================================================ */
+#fascia-calendario {
+  position: fixed;
+  top: var(--altezza-fascia-superiore);
+  left: 0;
+  right: 0;
+  min-height: var(--altezza-fascia-calendario);
+  background-color: var(--colore-sfondo-secondario);
+  border-bottom: 1px solid var(--colore-bordo);
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.375rem var(--padding-base);
+  z-index: 99;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Nasconde scrollbar visivamente */
+  scrollbar-width: none;
+  padding-left: max(var(--padding-base), env(safe-area-inset-left));
+  padding-right: max(var(--padding-base), env(safe-area-inset-right));
+}
+
+#fascia-calendario::-webkit-scrollbar {
+  display: none;
+}
+
+/* Singolo box giorno nel calendario */
+.box-giorno {
+  flex: 0 0 auto;
+  min-width: 5rem;
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.125rem;
+}
+
+.box-giorno.giorno-corrente {
+  border-color: var(--colore-accento);
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-accento) 10%, var(--colore-sfondo-elevato));
+}
+
+.box-giorno-numero {
+  font-size: var(--testo-piccolo);
+  font-weight: 600;
+  color: var(--colore-accento);
+}
+
+.box-giorno-impegni {
+  font-size: 0.75rem;
+  color: var(--colore-testo-secondario);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Banda eventi narrativi attivi — appare sotto i box-giorno nella fascia calendario */
+.eventi-attivi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  padding: 0.25rem var(--padding-base);
+  width: 100%;
+}
+
+.evento-attivo {
+  font-size: 0.7rem;
+  color: var(--colore-testo-secondario);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+
+/* ============================================================
+   LAYOUT PRINCIPALE
+   Occupa lo spazio sotto le due fasce fisse.
+   ============================================================ */
+#contenuto-principale {
+  position: relative;
+  margin-top: calc(var(--altezza-fascia-superiore) + var(--altezza-fascia-calendario));
+  padding: var(--padding-base);
+  padding-bottom: calc(var(--padding-base) + env(safe-area-inset-bottom));
+  padding-left: max(var(--padding-base), env(safe-area-inset-left));
+  padding-right: max(var(--padding-base), env(safe-area-inset-right));
+  min-height: calc(100vh - var(--altezza-fascia-superiore) - var(--altezza-fascia-calendario));
+  min-height: calc(100dvh - var(--altezza-fascia-superiore) - var(--altezza-fascia-calendario));
+}
+
+
+/* ============================================================
+   SCHERMATA PRINCIPALE DEL GIORNO — Slot giornalieri
+   ============================================================ */
+.schermata-giorno {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.slot-giornaliero {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: var(--padding-base);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slot-giornaliero-intestazione {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.slot-nome {
+  font-size: var(--testo-piccolo);
+  font-weight: 600;
+  color: var(--colore-testo-secondario);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.slot-contenuto {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-base);
+  color: var(--colore-testo);
+}
+
+/* Slot con impegno obbligatorio */
+.slot-obbligatorio {
+  border-left: 3px solid var(--colore-accento);
+}
+
+/* Slot già completato */
+.slot-completato {
+  opacity: var(--opacita-attenuato);
+}
+
+.slot-completato .slot-nome::after {
+  content: ' ·  completato';
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Pulsante azione dello slot */
+.pulsante-slot {
+  align-self: flex-start;
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo);
+  padding: 0.5rem 1rem;
+  color: var(--colore-testo);
+  font-size: var(--testo-base);
+  transition: background-color var(--durata-transizione-breve) var(--curva-transizione),
+              border-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.pulsante-slot:hover,
+.pulsante-slot:focus,
+.pulsante-slot:focus-visible {
+  background-color: var(--colore-sfondo-elevato);
+  border-color: var(--colore-accento);
+  color: var(--colore-accento);
+}
+
+
+/* ============================================================
+   SCHERMATA SCELTA TIPO ATTIVITÀ (tempo libero)
+   ============================================================ */
+.schermata-attivita {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.schermata-attivita h2 {
+  font-size: var(--testo-titolo);
+  color: var(--colore-accento);
+  margin-bottom: 0.25rem;
+}
+
+.griglia-attivita {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.pulsante-attivita {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo-grande);
+  padding: 1rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.pulsante-attivita:hover,
+.pulsante-attivita:focus,
+.pulsante-attivita:focus-visible {
+  border-color: var(--colore-luogo-corrente);
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-luogo-corrente) 8%, var(--colore-sfondo-secondario));
+}
+
+.attivita-nome {
+  font-weight: 600;
+  font-size: var(--testo-grande);
+  color: var(--colore-testo);
+}
+
+.attivita-descrizione {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+}
+
+
+/* ============================================================
+   SCHERMATA SCELTA LUOGO
+   ============================================================ */
+.schermata-luoghi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.schermata-luoghi h2 {
+  font-size: var(--testo-titolo);
+  color: var(--colore-accento);
+  margin-bottom: 0.25rem;
+}
+
+.box-luogo {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-left-width: 4px;
+  border-radius: var(--raggio-bordo);
+  padding: var(--padding-base);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.box-luogo:hover,
+.box-luogo:focus,
+.box-luogo:focus-visible {
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-luogo) 10%, var(--colore-sfondo-secondario));
+}
+
+/* Il colore tematico è applicato tramite attributo data-colore da ui.js */
+.box-luogo[data-colore="aule"]           { --colore-luogo: var(--colore-aule); border-left-color: var(--colore-aule); }
+.box-luogo[data-colore="biblioteca"]     { --colore-luogo: var(--colore-biblioteca); border-left-color: var(--colore-biblioteca); }
+.box-luogo[data-colore="alchimia"]       { --colore-luogo: var(--colore-alchimia); border-left-color: var(--colore-alchimia); }
+.box-luogo[data-colore="incantamento"]   { --colore-luogo: var(--colore-incantamento); border-left-color: var(--colore-incantamento); }
+.box-luogo[data-colore="sala-rituale"]   { --colore-luogo: var(--colore-sala-rituale); border-left-color: var(--colore-sala-rituale); }
+.box-luogo[data-colore="cortile"]        { --colore-luogo: var(--colore-cortile); border-left-color: var(--colore-cortile); }
+.box-luogo[data-colore="torre"]          { --colore-luogo: var(--colore-torre); border-left-color: var(--colore-torre); }
+.box-luogo[data-colore="archivio"]       { --colore-luogo: var(--colore-archivio); border-left-color: var(--colore-archivio); }
+.box-luogo[data-colore="scavi"]          { --colore-luogo: var(--colore-scavi); border-left-color: var(--colore-scavi); }
+
+.luogo-nome {
+  font-weight: 600;
+  font-size: var(--testo-grande);
+  color: var(--colore-testo);
+}
+
+.luogo-sommario {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+}
+
+.luogo-requisito {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-attenuato);
+  font-style: italic;
+}
+
+/* Luogo non ancora sbloccato */
+.box-luogo.bloccato {
+  opacity: var(--opacita-attenuato);
+  cursor: default;
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   SCHERMATA DEL LUOGO
+   Il colore tematico viene applicato come variabile CSS
+   da ui.js: --colore-luogo-corrente
+   ============================================================ */
+.schermata-luogo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-base);
+}
+
+.luogo-intestazione {
+  border-bottom: 1px solid var(--colore-luogo-corrente);
+  padding-bottom: var(--padding-base);
+}
+
+.luogo-intestazione h2 {
+  font-size: var(--testo-titolo);
+  color: var(--colore-luogo-corrente);
+}
+
+.luogo-descrizione {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-base);
+  color: var(--colore-testo-secondario);
+  line-height: var(--altezza-riga);
+}
+
+.lista-attivita-luogo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pulsante-attivita-luogo {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem var(--padding-base);
+  text-align: left;
+  color: var(--colore-testo);
+  font-family: var(--font-narrativo);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.pulsante-attivita-luogo:hover,
+.pulsante-attivita-luogo:focus,
+.pulsante-attivita-luogo:focus-visible {
+  border-color: var(--colore-luogo-corrente);
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-luogo-corrente) 8%, var(--colore-sfondo-secondario));
+}
+
+.pulsante-attivita-luogo.non-disponibile {
+  opacity: var(--opacita-attenuato);
+  cursor: default;
+  pointer-events: none;
+}
+
+.attivita-requisito-mancante {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-attenuato);
+  font-style: italic;
+  margin-top: 0.125rem;
+  display: block;
+}
+
+
+/* ============================================================
+   SISTEMA DI DIALOGO
+   ============================================================ */
+.schermata-dialogo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--padding-base);
+}
+
+.box-dialogo-png {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-left: 4px solid var(--colore-luogo-corrente);
+  border-radius: var(--raggio-bordo);
+  padding: var(--padding-base);
+}
+
+.png-nome {
+  font-size: var(--testo-piccolo);
+  font-weight: 600;
+  color: var(--colore-luogo-corrente);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+
+.png-testo {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-base);
+  color: var(--colore-testo);
+  line-height: var(--altezza-riga);
+}
+
+.lista-risposte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pulsante-risposta {
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem var(--padding-base);
+  text-align: left;
+  font-family: var(--font-narrativo);
+  color: var(--colore-testo);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.pulsante-risposta:hover,
+.pulsante-risposta:focus,
+.pulsante-risposta:focus-visible {
+  border-color: var(--colore-luogo-corrente);
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-luogo-corrente) 8%, var(--colore-sfondo-elevato));
+}
+
+.risposta-tono {
+  display: block;
+  font-size: 0.75rem;
+  font-family: var(--font-interfaccia);
+  color: var(--colore-testo-attenuato);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+
+/* ============================================================
+   TESTO NARRATIVO
+   Usato per descrizioni, esiti di azioni, transizioni.
+   ============================================================ */
+.testo-narrativo {
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-base);
+  color: var(--colore-testo);
+  line-height: var(--altezza-riga);
+}
+
+.testo-narrativo p + p {
+  margin-top: 0.75rem;
+}
+
+/* Pulsante di avanzamento dopo un testo narrativo */
+.pulsante-avanza {
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem 1.5rem;
+  color: var(--colore-accento);
+  font-size: var(--testo-base);
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.pulsante-avanza:hover,
+.pulsante-avanza:focus,
+.pulsante-avanza:focus-visible {
+  border-color: var(--colore-accento);
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-accento) 10%, var(--colore-sfondo-elevato));
+}
+
+
+/* ============================================================
+   PANNELLO SOVRAPPOSTO
+   Alta opacità, contrasto elevato.
+   Il pulsante Ok è primo nel DOM — viene definito prima
+   di #pannello-contenuto nell'HTML.
+   ============================================================ */
+#pannello-sovrapposto {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 14, 23, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--padding-base);
+  padding-top: max(var(--padding-base), env(safe-area-inset-top));
+  padding-bottom: max(var(--padding-base), env(safe-area-inset-bottom));
+  z-index: 200;
+}
+
+#pannello-ok {
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-accento);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem 2rem;
+  color: var(--colore-accento);
+  font-size: var(--testo-base);
+  margin-bottom: var(--padding-base);
+  box-shadow: var(--ombra-button);
+  transition: background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+#pannello-ok:hover,
+#pannello-ok:focus,
+#pannello-ok:focus-visible {
+  background-color: var(--colore-sfondo-elevato);  /* fallback Safari < 16.2 */
+  background-color: color-mix(in srgb, var(--colore-accento) 15%, var(--colore-sfondo-elevato));
+}
+
+#pannello-contenuto {
+  max-width: 36rem;
+  width: 100%;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo-grande);
+  padding: 1.5rem;
+  font-family: var(--font-narrativo);
+  font-size: var(--testo-base);
+  color: var(--colore-testo);
+  line-height: var(--altezza-riga);
+  box-shadow: var(--ombra-panel);
+}
+
+
+/* ============================================================
+   SCHERMATA IMPOSTAZIONI
+   ============================================================ */
+#schermata-impostazioni {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--colore-sfondo);
+  z-index: 150;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--padding-base);
+  padding-top: calc(var(--altezza-fascia-superiore) + var(--padding-base));
+  padding-bottom: max(var(--padding-base), env(safe-area-inset-bottom));
+  padding-left: max(var(--padding-base), env(safe-area-inset-left));
+  padding-right: max(var(--padding-base), env(safe-area-inset-right));
+}
+
+#impostazioni-titolo {
+  font-size: var(--testo-titolo);
+  color: var(--colore-accento);
+  margin-bottom: 1.5rem;
+}
+
+.controllo-volume {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.controllo-volume label {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#schermata-impostazioni [role="group"] {
+  margin-bottom: 1.5rem;
+}
+
+#schermata-impostazioni button {
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.625rem 1.25rem;
+  color: var(--colore-testo);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+#schermata-impostazioni button:hover,
+#schermata-impostazioni button:focus,
+#schermata-impostazioni button:focus-visible {
+  border-color: var(--colore-accento);
+}
+
+#versione-gioco {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-attenuato);
+  font-family: var(--font-interfaccia);
+  margin-top: 1rem;
+}
+
+#pulsante-chiudi-impostazioni {
+  color: var(--colore-accento);
+  border-color: var(--colore-accento);
+}
+
+
+/* ============================================================
+   TRANSIZIONI TRA SCHERMATE
+   La classe .dissolvenza-entrata è aggiunta da ui.js
+   all'elemento che sta entrando.
+   ============================================================ */
+@keyframes dissolvenzaEntrata {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dissolvenza-entrata {
+  animation: dissolvenzaEntrata var(--durata-transizione) var(--curva-transizione) both;
+}
+
+
+/* ============================================================
+   DECORAZIONI TEMATICHE
+   Aria-hidden="true" su tutti gli elementi puramente decorativi.
+   Nessun contenuto informativo qui.
+   ============================================================ */
+.decorazione-bordo {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--colore-luogo-corrente),
+    transparent
+  );
+  margin: 0.5rem 0;
+}
+
+
+/* ============================================================
+   MINIGIOCHI — stili comuni e per ogni minigioco
+   Nessuna logica di gioco qui. Solo presentazione.
+   ============================================================ */
+
+/* Pulsanti primario/secondario usati nei minigiochi */
+.btn-primario {
+  background-color: var(--colore-accento);
+  color: #0f0e17;
+  border: none;
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem 1.5rem;
+  font-size: var(--testo-base);
+  font-weight: 600;
+  transition: opacity var(--durata-transizione-breve) var(--curva-transizione);
+}
+.btn-primario:disabled {
+  opacity: 0.35;
+}
+.btn-primario:not(:disabled):hover,
+.btn-primario:not(:disabled):focus,
+.btn-primario:not(:disabled):focus-visible {
+  opacity: 0.85;
+}
+
+.btn-secondario {
+  background-color: transparent;
+  color: var(--colore-testo-secondario);
+  border: 1px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem 1.25rem;
+  font-size: var(--testo-base);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              color var(--durata-transizione-breve) var(--curva-transizione);
+}
+.btn-secondario:disabled {
+  opacity: 0.3;
+}
+.btn-secondario:not(:disabled):hover,
+.btn-secondario:not(:disabled):focus,
+.btn-secondario:not(:disabled):focus-visible {
+  border-color: var(--colore-accento);
+  color: var(--colore-accento);
+}
+
+
+/* — MASTERMIND DELLE FORMULE — */
+.minigioco-mastermind {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+}
+
+.mastermind-intestazione {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+.mastermind-legenda {
+  font-size: 0.75rem;
+  color: var(--colore-testo-attenuato);
+  margin: -0.75rem 0 0;
+}
+
+.mastermind-storico {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+
+.mastermind-riga-storico {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--testo-piccolo);
+}
+
+.mastermind-simboli-storico {
+  color: var(--colore-testo);
+  letter-spacing: 0.03em;
+}
+
+.mastermind-feedback-storico {
+  color: var(--colore-accento);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.mastermind-ipotesi {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mastermind-slot {
+  min-width: 3rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: var(--raggio-bordo);
+  font-size: var(--testo-base);
+  text-align: center;
+  border: 2px solid var(--colore-bordo-chiaro);
+  background-color: var(--colore-sfondo-elevato);
+  color: var(--colore-testo-secondario);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.mastermind-slot--pieno {
+  border-color: var(--colore-luogo-corrente);
+  color: var(--colore-testo);
+}
+
+.mastermind-slot--pieno:hover,
+.mastermind-slot--pieno:focus,
+.mastermind-slot--pieno:focus-visible {
+  border-color: var(--colore-errore);
+  color: var(--colore-errore);
+}
+
+.mastermind-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mastermind-simbolo-pool {
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.mastermind-simbolo-pool:not(:disabled):hover,
+.mastermind-simbolo-pool:not(:disabled):focus,
+.mastermind-simbolo-pool:not(:disabled):focus-visible {
+  border-color: var(--colore-luogo-corrente);
+  background-color: var(--colore-sfondo-elevato);
+}
+
+.mastermind-simbolo-pool:disabled {
+  opacity: 0.3;
+}
+
+.mastermind-controlli {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+
+/* — MECCANICA DI SPELLCASTING — */
+.minigioco-spellcasting {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+}
+
+.spellcasting-titolo {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+.spellcasting-elementi {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spellcasting-elemento {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.6rem 0.75rem;
+  font-size: var(--testo-piccolo);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.spellcasting-elemento--attivo {
+  border-color: var(--colore-luogo-corrente);
+}
+
+.spellcasting-elemento--corretto {
+  border-color: var(--colore-successo);
+  background-color: color-mix(in srgb, var(--colore-successo) 8%, var(--colore-sfondo-secondario));
+}
+
+/* Fallback per Safari < 16.2 che non supporta color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .spellcasting-elemento--corretto {
+    border-color: var(--colore-successo);
+  }
+}
+
+.spellcasting-elemento--fuoriTempo {
+  border-color: var(--colore-accento-scuro);
+}
+
+.spellcasting-elemento--mancato {
+  border-color: var(--colore-errore);
+  opacity: 0.6;
+}
+
+.spellcasting-contenitore-barra {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--colore-bordo);
+}
+
+.spellcasting-barra {
+  height: 100%;
+  background-color: var(--colore-luogo-corrente);
+  width: 0%;
+  transition: background-color 0.1s ease;
+}
+
+.spellcasting-barra--picco {
+  background-color: var(--colore-accento);
+  box-shadow: 0 0 6px var(--colore-accento);
+}
+
+.spellcasting-nome-el {
+  flex: 1;
+  color: var(--colore-testo);
+}
+
+.spellcasting-icona-stato {
+  color: var(--colore-testo-attenuato);
+  font-size: 1rem;
+  width: 1.2rem;
+  text-align: center;
+}
+
+.spellcasting-elemento--attivo    .spellcasting-icona-stato { color: var(--colore-luogo-corrente); }
+.spellcasting-elemento--corretto  .spellcasting-icona-stato { color: var(--colore-successo); }
+.spellcasting-elemento--fuoriTempo .spellcasting-icona-stato { color: var(--colore-accento-scuro); }
+.spellcasting-elemento--mancato   .spellcasting-icona-stato { color: var(--colore-errore); }
+
+/* Pulsante di attivazione — grande e centrale */
+.spellcasting-btn-attiva {
+  width: 100%;
+  padding: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo-grande);
+  background-color: var(--colore-sfondo-elevato);
+  color: var(--colore-testo-attenuato);
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              background-color var(--durata-transizione-breve) var(--curva-transizione),
+              color var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+.spellcasting-btn-attiva--pronto {
+  border-color: var(--colore-luogo-corrente);
+  background-color: var(--colore-sfondo-secondario);
+  color: var(--colore-testo);
+}
+
+.spellcasting-btn-attiva--pronto:hover,
+.spellcasting-btn-attiva--pronto:focus,
+.spellcasting-btn-attiva--pronto:focus-visible {
+  background-color: var(--colore-sfondo-elevato);
+}
+
+.spellcasting-btn-attiva:disabled {
+  opacity: 0.4;
+}
+
+.spellcasting-sommario {
+  text-align: center;
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+
+/* — REBUS ACCESSIBILE — */
+.minigioco-rebus {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+}
+
+/* Riga tipo (Rebus / Quiz) + nome disciplina */
+.rebus-intestazione {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.rebus-tipo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colore-testo-attenuato);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rebus-disciplina-label {
+  font-size: var(--testo-grande);
+  font-weight: 600;
+  color: var(--colore-testo);
+}
+
+/* Blocco indizi (solo Rebus) */
+.rebus-indizi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem;
+}
+
+.rebus-indizi-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rebus-indizio {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo);
+  line-height: 1.5;
+}
+
+/* Animazione ingresso nuovo indizio */
+.rebus-indizio--nuovo {
+  animation: rebus-entra 0.35s ease;
+}
+
+@keyframes rebus-entra {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rebus-contatore {
+  font-size: 0.75rem;
+  color: var(--colore-testo-attenuato);
+  margin: 0.25rem 0 0;
+}
+
+/* Pulsante "Prossimo indizio" — allineato a sinistra */
+.rebus-btn-indizio {
+  align-self: flex-start;
+}
+
+/* Domanda del Quiz */
+.rebus-domanda {
+  font-size: var(--testo-base);
+  color: var(--colore-testo);
+  margin: 0;
+  line-height: 1.6;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem;
+}
+
+/* Griglia opzioni di risposta */
+.rebus-opzioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rebus-opzione {
+  text-align: left;
+  width: 100%;
+  transition: border-color var(--durata-transizione-breve) var(--curva-transizione),
+              color var(--durata-transizione-breve) var(--curva-transizione),
+              opacity var(--durata-transizione-breve) var(--curva-transizione);
+}
+
+/* Evidenziazione risposta corretta dopo la selezione.
+   Doppia classe per battere la specificità di .btn-secondario:disabled */
+.btn-secondario.rebus-opzione--corretta,
+.btn-secondario.rebus-opzione--corretta:disabled {
+  border-color: var(--colore-successo);
+  color: var(--colore-successo);
+  opacity: 0.9;
+}
+
+.btn-secondario.rebus-opzione--sbagliata,
+.btn-secondario.rebus-opzione--sbagliata:disabled {
+  border-color: var(--colore-errore);
+  color: var(--colore-errore);
+  opacity: 0.9;
+}
+
+/* Pannello risultato — aggiunto in coda al wrapper senza re-render */
+.rebus-pannello-risultato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem;
+  border-top-width: 2px;
+}
+
+.rebus-pannello-risultato--corretto {
+  border-top-color: var(--colore-successo);
+}
+
+.rebus-pannello-risultato--errato {
+  border-top-color: var(--colore-errore);
+}
+
+.rebus-testo-risultato {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+  line-height: 1.5;
+}
+
+
+/* — LABIRINTO DELL'EQUILIBRIO — */
+.minigioco-labirinto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+}
+
+.labirinto-intestazione {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+.labirinto-gruppo-stato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  padding: 0.75rem;
+}
+
+.labirinto-etichetta-stato {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colore-testo-attenuato);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+/* Testo descrittivo della tensione — min-height evita il layout shift
+   tra descrizioni di lunghezze diverse */
+.labirinto-testo-stato {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo);
+  margin: 0;
+  min-height: 2.6em;
+  line-height: 1.4;
+}
+
+/* Barra di tensione */
+.labirinto-contenitore-barra {
+  position: relative;
+  height: 12px;
+  background-color: var(--colore-sfondo-elevato);
+  border-radius: 6px;
+  overflow: visible;
+}
+
+/* Zona verde che indica il range di equilibrio */
+.labirinto-zona-equilibrio {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: color-mix(in srgb, var(--colore-successo) 22%, transparent);
+  border-radius: 3px;
+}
+
+/* Fallback per Safari < 16.2 (color-mix non supportato) */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .labirinto-zona-equilibrio {
+    background-color: rgba(82, 192, 122, 0.18);
+  }
+}
+
+/* Indicatore mobile — disco che si sposta lungo la barra */
+.labirinto-indicatore {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.2s ease,
+              background-color 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.labirinto-indicatore--equilibrio {
+  background-color: var(--colore-successo);
+  box-shadow: 0 0 8px var(--colore-successo);
+}
+
+.labirinto-indicatore--vicino {
+  background-color: var(--colore-accento);
+  box-shadow: 0 0 4px var(--colore-accento);
+}
+
+.labirinto-indicatore--lontano {
+  background-color: var(--colore-errore);
+  box-shadow: none;
+}
+
+/* Contatore passi consecutivi in equilibrio */
+.labirinto-passi {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+/* Pulsanti di azione — in colonna per facilità di tap su mobile */
+.labirinto-azioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Storico ultime mosse (decorativo, aria-hidden) */
+.labirinto-storico {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.labirinto-storico-voce {
+  font-size: 0.75rem;
+  color: var(--colore-testo-attenuato);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--raggio-bordo);
+  background-color: var(--colore-sfondo-secondario);
+}
+
+.labirinto-storico-voce--equilibrio {
+  color: var(--colore-successo);
+}
+
+/* Schermata di fine */
+.minigioco-labirinto--fine {
+  justify-content: center;
+  padding-top: 1rem;
+  gap: 1.5rem;
+}
+
+.labirinto-fine-titolo {
+  font-size: var(--testo-grande);
+  font-weight: 600;
+  color: var(--colore-testo);
+  margin: 0;
+}
+
+.labirinto-fine-descrizione {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+  line-height: 1.6;
+}
+
+
+/* — SCASSINAMENTO ALCHEMICO & SCASSINAMENTO DELL'INCANTAMENTO — */
+
+/* Pannello avviso VoiceOver-off — alertdialog modale */
+.minigioco-scassinamento-avviso {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: var(--colore-sfondo-elevato);
+  border: 1px solid var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo);
+  padding: 1rem;
+}
+
+.scassinamento-avviso-testo {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Wrapper principale */
+.minigioco-scassinamento {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem 0;
+}
+
+.scassinamento-titolo {
+  font-size: var(--testo-grande);
+  font-weight: 600;
+  color: var(--colore-testo);
+  margin: 0;
+}
+
+.minigioco-scassinamento--alchemico .scassinamento-titolo {
+  color: var(--colore-alchimia);
+}
+
+.minigioco-scassinamento--incantamento .scassinamento-titolo {
+  color: var(--colore-incantamento);
+}
+
+.scassinamento-istruzione {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+}
+
+/* Barra di progresso — ScassinamentoAlchemico */
+.scassinamento-barra-contenitore {
+  position: relative;
+  height: 1.5rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: var(--raggio-bordo);
+  overflow: hidden;
+}
+
+.scassinamento-barra-progresso {
+  height: 100%;
+  width: 0;
+  background-color: var(--colore-alchimia);
+  border-radius: var(--raggio-bordo);
+  transition: background-color 0.1s ease;
+}
+
+/* Nella finestra: colore accento */
+.scassinamento-barra-progresso--finestra {
+  background-color: var(--colore-accento);
+}
+
+/* Oltre la finestra: colore errore */
+.scassinamento-barra-progresso--tardo {
+  background-color: var(--colore-errore);
+}
+
+/* Marker della finestra ottimale — posizionato via JS con left/width */
+.scassinamento-marker-finestra {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Fallback per Safari < 16.2 che non supporta color-mix() */
+  background-color: rgba(201, 168, 76, 0.28);
+  border-left: 2px solid var(--colore-accento);
+  border-right: 2px solid var(--colore-accento);
+  pointer-events: none;
+}
+
+@supports (background-color: color-mix(in srgb, red 50%, blue)) {
+  .scassinamento-marker-finestra {
+    background-color: color-mix(in srgb, var(--colore-accento) 22%, transparent);
+  }
+}
+
+/* Contenitore pendolo — ScassinamentoIncantamento */
+.scassinamento-pendolo-contenitore {
+  padding: 0.5rem 0;
+}
+
+.scassinamento-pendolo-traccia {
+  position: relative;
+  height: 2.5rem;
+  background-color: var(--colore-sfondo-secondario);
+  border: 1px solid var(--colore-bordo);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Zona ottimale — estremità destra, larghezza ~12% */
+.scassinamento-pendolo-zona-ottimale {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 13%;
+  /* Fallback per Safari < 16.2 */
+  background-color: rgba(139, 63, 196, 0.28);
+  border-left: 2px solid var(--colore-incantamento);
+  pointer-events: none;
+}
+
+@supports (background-color: color-mix(in srgb, red 50%, blue)) {
+  .scassinamento-pendolo-zona-ottimale {
+    background-color: color-mix(in srgb, var(--colore-incantamento) 22%, transparent);
+  }
+}
+
+/* Pallino che scorre lungo la traccia — posizionato via JS */
+.scassinamento-pendolo-pallino {
+  position: absolute;
+  top: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: var(--colore-testo-secondario);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Picco: pallino illuminato quando livello > 0.85 */
+.scassinamento-pendolo-pallino--picco {
+  background-color: var(--colore-incantamento);
+  box-shadow: 0 0 0.5rem var(--colore-incantamento);
+}
+
+/* Area tap/swipe — grande tocco, nessun overflow visivo */
+.scassinamento-area-tap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  width: 100%;
+  background-color: var(--colore-sfondo-secondario);
+  border: 2px dashed var(--colore-bordo-chiaro);
+  border-radius: var(--raggio-bordo-grande);
+  color: var(--colore-testo-attenuato);
+  font-size: var(--testo-piccolo);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.scassinamento-area-tap:focus,
+.scassinamento-area-tap:focus-visible {
+  outline: 2px solid var(--colore-accento);
+  outline-offset: 2px;
+}
+
+.scassinamento-area-tap:active {
+  background-color: var(--colore-sfondo-elevato);
+  border-color: var(--colore-accento);
+}
+
+/* Schermata di fine — replaceChildren sostituisce l'intero wrapper */
+.minigioco-scassinamento--fine {
+  gap: 1.5rem;
+}
+
+.scassinamento-fine-titolo {
+  font-size: var(--testo-grande);
+  font-weight: 600;
+  color: var(--colore-testo);
+  margin: 0;
+}
+
+.scassinamento-fine-descrizione {
+  font-size: var(--testo-piccolo);
+  color: var(--colore-testo-secondario);
+  margin: 0;
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   MEDIA QUERY
+   Nessun layout radicalmente diverso — il gioco è mobile-first.
+   Piccoli aggiustamenti per schermi molto stretti o molto larghi.
+   ============================================================ */
+@media (max-width: 320px) {
+  :root {
+    --testo-base:   0.9375rem;
+    --padding-base: 0.75rem;
+  }
+
+  .griglia-attivita {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 480px) {
+  #pannello-contenuto {
+    padding: 2rem;
+  }
+}
+
+/* Riduzione movimento per utenti che lo preferiscono */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}
