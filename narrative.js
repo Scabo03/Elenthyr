@@ -951,3 +951,76 @@ const TESTI_INCIDENTI_INTERNI = [
   `Qualcosa di strano è stato osservato nella torre di notte — una luce che non avrebbe dovuto esserci.`,
   `Una sessione di rituali è stata interrotta bruscamente. La Sala Rituale è rimasta chiusa per il resto della giornata.`
 ];
+
+
+// ------------------------------------------------------------
+// TESTI TUTORIAL MINIGIOCHI
+// Mostrati una sola volta, alla prima occorrenza di ogni minigioco.
+// Tracciamento in game-engine.js: tutorialVisti[].
+// ------------------------------------------------------------
+const TESTI_TUTORIAL_MINIGIOCHI = {
+  memoryRune: `Scopri due rune alla volta toccandole. Ogni runa emette un pattern sonoro unico. Se le due rune hanno lo stesso pattern, rimangono scoperte. Se sono diverse, si ricoprono e perdi un tentativo. Trova tutte le coppie per completare il minigioco.`,
+  minesweeperReagenti: `La griglia contiene reagenti sicuri e instabili. I numeri indicano quanti reagenti instabili si trovano nelle celle adiacenti. Marca le celle che ritieni instabili e rivela quelle sicure. Non rivelare mai una cella instabile.`,
+  mastermindFormule: `Devi indovinare la formula segreta: una sequenza di simboli nell'ordine corretto. Dopo ogni tentativo ricevi tre tipi di feedback sonoro: tono alto per simbolo corretto nel posto giusto, doppio bip per simbolo corretto nel posto sbagliato, tono basso per simbolo errato. Usa i tentativi precedenti per ragionare.`,
+  meccanicaSpellcasting: `Devi premere il pulsante al momento giusto, quando l'energia raggiunge la zona sicura. Hai qualche secondo di preparazione prima di ogni fase — usa questo tempo per agganciare il pulsante con VoiceOver. Il suono ti guida: diventa più acuto quando sei vicino alla zona sicura.`,
+  labirintoEquilibrio: `Guida l'energia attraverso il labirinto mantenendo l'equilibrio. La barra di tensione indica il tuo stato: tienila nella zona verde. Ogni movimento consuma equilibrio — pianifica il percorso prima di agire.`,
+  rebusAccessibile: `Ti vengono presentati tre enigmi in sequenza, di difficoltà crescente. Ogni enigma descrive una situazione del mondo di Elenthyr e richiede ragionamento per essere risolto. Leggi attentamente il testo prima di scegliere la risposta.`,
+  sblocaggioReagente: `Individua la combinazione corretta di reagenti per aprire il sigillo. Ogni tentativo ti dice quanti reagenti sono corretti e quanti sono nella posizione giusta. Usa la logica per restringere le possibilità.`,
+  dissolvenza: `Sincronizzati con il ritmo del sigillo magico. La frequenza oscilla come un pendolo: intervieni quando la sincronizzazione è al massimo. Ascolta e senti il ritmo prima di agire.`
+};
+
+
+// ------------------------------------------------------------
+// TESTI INTRODUZIONE LEZIONE CON MINIGIOCO
+// Mostrati prima di ogni minigioco durante le lezioni, nella
+// voce del docente della disciplina. Pool di varianti per
+// evitare ripetizioni ravvicinate.
+// Organizzati per idDisciplina.
+// ------------------------------------------------------------
+const TESTI_INTRO_LEZIONE = {
+  incantamento: [
+    `La Magistra Hilda Vorn dispone davanti a voi un set di lastre di rame incise con simboli antichi. «L'incantamento comincia con il riconoscimento», dice, studiandovi. «Ogni glifo ha una firma. Imparatela prima di tracciarla.»`,
+    `Vorn indica un pannello di rune disposte in sequenza. «Le rune si abbinano per risonanza», dice. «Il vostro compito oggi è trovare quelle coppie. Usate l'ascolto, non la vista.»`,
+    `«La memoria è il fondamento dell'incantamento», enuncia la Magistra Vorn senza preamboli. «Oggi alleniamo la memoria. Riconoscete le rune per la firma sonora e abbinate le coppie.»`
+  ],
+  alchimia: [
+    `Pietro Vasso aggiusta il grembiule e indica la griglia di vasi disposta sul banco. «Qualcuno qui vi farebbe molto felici, qualcun altro molto meno», dice con mezzo sorriso. «Capite quali sono quali prima di toccarli.»`,
+    `«Il laboratorio non perdona le mani frettolose», dice il Docente Vasso, posando un vasetto con cura elaborata. «Studiate la griglia. I numeri vi dicono quanto siete vicini al pericolo. Leggeteli.»`,
+    `Vasso indica la griglia di reagenti. «Bello questo. Pericolosissimo, ma bello.» Vi guarda con aria amichevole. «Oggi imparate a distinguere. Segnate quelli instabili, rivelate quelli sicuri.»`
+  ],
+  rituali: [
+    `Sevan Drath vi indica il centro della sala con un gesto misurato. Non spiega subito. Poi, dopo un lungo silenzio: «L'equilibrio non si trova — si costruisce. Muovetevi con intenzione.»`,
+    `L'Alto Maestro vi osserva in silenzio dalla soglia della Sala Rituale. «Prima di procedere», dice alla fine, «dovete saper navigare la tensione energetica. Oggi è quello che farete.»`,
+    `«Il rituale ha una struttura interna», dice Sevan Drath. «Ogni nodo rappresenta uno stato di tensione. Trovate l'equilibrio. Procedete.»`
+  ],
+  teoriaArcana: [
+    `La Magistra Cornelia Vesti pone davanti a voi una sequenza di simboli arcani incompleta. «Le formule hanno una logica interna», dice, senza alzare lo sguardo. «Trovate la struttura nascosta. Non ammetto approssimazioni.»`,
+    `«Ogni formula arcana è un sistema chiuso», enuncia la Magistra Vesti. «Oggi la decodificate. Avete un numero finito di tentativi — usateli con metodo.»`,
+    `Cornelia Vesti scrive una sequenza sulla lavagna, poi la cancella con gesto secco. «Ricostruitela», dice. «Non a memoria — per ragionamento. È la differenza tra uno studente e un teorico.»`
+  ],
+  spellcasting: [
+    `Kael Dorne batte le mani una volta. «Oggi lanciate davvero», dice. «Niente teoria — senso del ritmo puro. Aspettate il momento esatto, poi intervenite. Troppo presto o troppo tardi non conta.»`,
+    `«La spell non aspetta», dice il Docente Dorne. «Ha la sua struttura ritmica e voi vi adattate ad essa, non il contrario. Ascoltate. Poi agite.»`,
+    `Dorne vi guarda con quella sua espressione sospesa tra sfida e curiosità. «Ogni elemento energetico ha una finestra. Trovatela. Intervenite dentro quella finestra.»`
+  ],
+  storia: [
+    `Il Docente Matteo Servi chiude il libro e vi guarda. «Il passato non si studia — si interroga», dice. «Oggi troverete alcune domande che non hanno risposta immediata. È quello il punto.»`,
+    `«La storia è fatta di strati», dice Servi con la sua calma riflessiva. «Ogni evento ne porta altri con sé. Oggi riconoscerete questi strati e troverete il filo corretto.»`,
+    `Servi indica la serie di enigmi storici sul banco. «Queste non sono domande da manuale», dice. «Richiedono di sapere dove guardare. Usate quello che sapete.»`
+  ],
+  filosofia: [
+    `La Docente Maren Solde vi sorride con la sua consueta apertura. «Nessuna domanda è assurda finché non si smette di porla», dice. «Oggi avrete qualche enigma da sciogliere. Non cercate la risposta giusta — cercate quella onesta.»`,
+    `«La filosofia comincia dove le certezze finiscono», dice Maren Solde. «Ragionate ad alta voce, anche solo dentro di voi. È lì che trovate la risposta.»`,
+    `«Oggi», dice la Docente Solde con quella voce che rende ogni lezione un invito, «avremo a che fare con alcuni paradossi. Non scoraggiatevi se la prima risposta sembra sbagliata.»`
+  ],
+  scienzeNaturali: [
+    `Edvar Sollen si interrompe a metà di una frase non correlata, vi fissa, poi sorride come se avesse risolto qualcosa. «Ah, sì, voi. L'osservazione rigorosa è il fondamento», dice. «Osservate, ragionate, rispondete. Nell'ordine.»`,
+    `«Il fenomeno naturale non mente», dice Sollen, distogliendo lo sguardo da qualcosa sull'orizzonte. «Mente la nostra interpretazione. Oggi alleniamo la seconda — che è quella che conta davvero.»`,
+    `Il Custode Sollen annota qualcosa sul taccuino mentre aspettate. «Ah», dice infine. «Sì. Oggi avete alcune domande di osservazione. Prendete il tempo che vi serve.»`
+  ],
+  letteratura: [
+    `I testi sul banco attendono. Ciascuno di essi richiede attenzione e precisione prima di cedere il proprio senso. Leggete con cura — non ogni risposta è in superficie.`,
+    `La lezione di letteratura oggi procede per enigmi. Non si tratta di memoria ma di comprensione: ogni testo richiede di essere interrogato, non solo letto.`,
+    `Ogni testo porta in sé una struttura che si può imparare a riconoscere. Oggi allenerete questo riconoscimento su esempi dal canone.`
+  ]
+};

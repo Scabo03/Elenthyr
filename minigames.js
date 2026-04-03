@@ -229,29 +229,52 @@ const MemoryRune = {
   },
 
   _renderizza(contenitore) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'minigioco-memory';
+
+    // Decorazione tematica — aria-hidden
+    const deco = document.createElement('div');
+    deco.className = 'minigioco-deco-rune';
+    deco.setAttribute('aria-hidden', 'true');
+    deco.textContent = 'ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ';
+    wrapper.appendChild(deco);
+
+    // Intestazione con progresso
+    const trovate = this.stato.abbinate.size / 2;
+    const totali  = this.stato.coppie;
+    const intestazione = document.createElement('p');
+    intestazione.className = 'minigioco-intestazione';
+    intestazione.setAttribute('role', 'status');
+    intestazione.setAttribute('aria-label', `Coppie trovate: ${trovate} su ${totali}.`);
+    intestazione.textContent = `Coppie trovate: ${trovate} / ${totali}`;
+    wrapper.appendChild(intestazione);
+
+    // Griglia
     const griglia = document.createElement('div');
     griglia.className = 'minigioco-griglia';
     griglia.setAttribute('role', 'grid');
     griglia.setAttribute('aria-label', 'Griglia Memory delle Rune');
 
     this.stato.carte.forEach(carta => {
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = 'carta-runa';
-      el.setAttribute('data-id', carta.id);
-
       const statoStringa = this.stato.abbinate.has(carta.id)
         ? 'abbinata'
         : carta.visibile ? 'rivelata' : 'nascosta';
 
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = `carta-runa carta-runa--${statoStringa}`;
+      el.setAttribute('data-id', carta.id);
       el.setAttribute('aria-label', `Runa ${statoStringa === 'nascosta' ? 'nascosta' : carta.nome}, ${statoStringa}`);
-      el.textContent = statoStringa === 'nascosta' ? '?' : carta.nome;
+      el.textContent = statoStringa === 'nascosta' ? '᛫' : carta.nome;
 
-      el.addEventListener('click', () => this._seleziona(carta.id, contenitore));
+      if (statoStringa !== 'abbinata') {
+        el.addEventListener('click', () => this._seleziona(carta.id, contenitore));
+      }
       griglia.appendChild(el);
     });
 
-    contenitore.replaceChildren(griglia);
+    wrapper.appendChild(griglia);
+    contenitore.replaceChildren(wrapper);
   },
 
   _seleziona(idCarta, contenitore) {
@@ -332,11 +355,12 @@ const MinesweeperReagenti = {
     this.stato = {
       righe,
       colonne,
-      pericoli:    configGrado.pericoli,
-      celle:       [],
-      rivelate:    new Set(),
-      segnate:     new Set(),
-      tentativo:   _incrementaTentativi('minesweeperReagenti'),
+      pericoli:      configGrado.pericoli,
+      celle:         [],
+      rivelate:      new Set(),
+      segnate:       new Set(),
+      modalitaSegna: false,
+      tentativo:     _incrementaTentativi('minesweeperReagenti'),
       callbackFine
     };
 
@@ -392,13 +416,61 @@ const MinesweeperReagenti = {
 
   _renderizza(contenitore) {
     const { righe, colonne } = this.stato;
+    const lettere = 'ABCDEFGHIJ';
 
+    const wrapper = document.createElement('div');
+    wrapper.className = 'minigioco-minesweeper';
+
+    // Decorazione tematica — aria-hidden
+    const deco = document.createElement('div');
+    deco.className = 'minigioco-deco-alchimia';
+    deco.setAttribute('aria-hidden', 'true');
+    deco.textContent = '⚗  ⚗  ⚗';
+    wrapper.appendChild(deco);
+
+    // Intestazione: progresso + pulsante toggle modalità
+    const sicureRivelate = [...this.stato.rivelate].filter(i => !this.stato.celle[i]).length;
+    const totaleSicure   = this.stato.celle.filter(p => !p).length;
+
+    const intestazione = document.createElement('p');
+    intestazione.className = 'minigioco-intestazione';
+    intestazione.setAttribute('role', 'status');
+    intestazione.setAttribute('aria-label',
+      `Sicuri esaminati: ${sicureRivelate} su ${totaleSicure}. Pericoli da isolare: ${this.stato.pericoli}.`);
+    intestazione.textContent = `Sicuri: ${sicureRivelate} / ${totaleSicure}   ·   Pericoli: ${this.stato.pericoli}`;
+    wrapper.appendChild(intestazione);
+
+    // Controlli: toggle modalità segna/esamina
+    const rigaControlli = document.createElement('div');
+    rigaControlli.className = 'minesweeper-controlli';
+
+    const btnModalita = document.createElement('button');
+    btnModalita.type = 'button';
+    const inSegna = this.stato.modalitaSegna;
+    btnModalita.className = `minesweeper-btn-modalita${inSegna ? ' minesweeper-btn-modalita--segna' : ''}`;
+    btnModalita.textContent = inSegna ? '⚑ Modalità: Segna' : '· Modalità: Esamina';
+    btnModalita.setAttribute('aria-label', inSegna
+      ? 'Modalità segna attiva. Tocca per tornare a Esamina.'
+      : 'Modalità esamina attiva. Tocca per passare a Segna.');
+    btnModalita.addEventListener('click', () => {
+      this.stato.modalitaSegna = !this.stato.modalitaSegna;
+      _annunciaVoiceoverSafe(this.stato.modalitaSegna
+        ? 'Modalità segna attiva. Tocca le celle per marcarle come pericolose.'
+        : 'Modalità esamina attiva. Tocca le celle per rivelare il contenuto.');
+      this._renderizza(contenitore);
+      // Ripristina focus sul pulsante toggle dopo il re-render
+      const nuovoBtnModalita = contenitore.querySelector('.minesweeper-btn-modalita');
+      if (nuovoBtnModalita) nuovoBtnModalita.focus();
+    });
+    rigaControlli.appendChild(btnModalita);
+    wrapper.appendChild(rigaControlli);
+
+    // Griglia
     const griglia = document.createElement('div');
     griglia.className = 'minigioco-griglia-minesweeper';
     griglia.setAttribute('role', 'grid');
+    griglia.setAttribute('aria-label', `Griglia reagenti ${righe}×${colonne}`);
     griglia.style.gridTemplateColumns = `repeat(${colonne}, 1fr)`;
-
-    const lettere = 'ABCDEFGHIJ';
 
     for (let r = 0; r < righe; r++) {
       for (let c = 0; c < colonne; c++) {
@@ -410,32 +482,50 @@ const MinesweeperReagenti = {
 
         const cella = document.createElement('button');
         cella.type = 'button';
-        cella.className = 'cella-reagente';
         cella.setAttribute('data-indice', indice);
 
-        let statoLabel = 'non esaminata';
+        let statoLabel  = 'non esaminata';
         let testoVisivo = '';
+        let statoCss    = 'nascosta';
 
         if (rivelata) {
           const conteggio = this._contaPericoli(indice);
-          statoLabel  = pericolosa ? 'pericolosa!' : `sicura, ${conteggio} pericoli adiacenti`;
-          testoVisivo = pericolosa ? '⚠' : String(conteggio || '·');
+          if (pericolosa) {
+            statoLabel  = 'pericolosa!';
+            testoVisivo = '⚠';
+            statoCss    = 'pericolosa';
+          } else {
+            statoLabel  = `sicura, ${conteggio} pericoli adiacenti`;
+            testoVisivo = String(conteggio || '·');
+            statoCss    = 'sicura';
+            cella.setAttribute('data-conteggio', String(conteggio));
+          }
         } else if (segnata) {
           statoLabel  = 'segnata come pericolosa';
           testoVisivo = '⚑';
+          statoCss    = 'segnata';
         }
 
-        cella.setAttribute('aria-label', `Cella ${coordinata}: ${statoLabel}`);
+        cella.className = `cella-reagente cella-reagente--${statoCss}`;
+        cella.setAttribute('aria-label', `${coordinata}: ${statoLabel}`);
         cella.textContent = testoVisivo || coordinata;
 
-        // Click sinistro: esamina
-        cella.addEventListener('click', () => this._esamina(indice, contenitore));
+        if (!rivelata) {
+          cella.addEventListener('click', () => {
+            if (this.stato.modalitaSegna) {
+              this._segna(indice, contenitore);
+            } else {
+              this._esamina(indice, contenitore);
+            }
+          });
+        }
 
         griglia.appendChild(cella);
       }
     }
 
-    contenitore.replaceChildren(griglia);
+    wrapper.appendChild(griglia);
+    contenitore.replaceChildren(wrapper);
   },
 
   _esamina(indice, contenitore) {
@@ -485,6 +575,21 @@ const MinesweeperReagenti = {
       const colonna = indice % colonne;
       this._adiacenti(riga, colonna).forEach(i => this._rivelaCella(i));
     }
+  },
+
+  // Segna o desegna una cella come sospetta (modalità segna)
+  _segna(indice, contenitore) {
+    if (this.stato.rivelate.has(indice)) return;
+    if (this.stato.segnate.has(indice)) {
+      this.stato.segnate.delete(indice);
+      Aptico.leggero();
+      _annunciaVoiceoverSafe('Segnalazione rimossa.');
+    } else {
+      this.stato.segnate.add(indice);
+      Aptico.medio();
+      _annunciaVoiceoverSafe('Cella segnata come pericolosa.');
+    }
+    this._renderizza(contenitore);
   },
 
   _termina(riuscito) {
@@ -653,28 +758,36 @@ const MastermindFormule = {
       wrapper.appendChild(legenda);
     }
 
-    // --- Storico tentativi (aria-live per annunci automatici) ---
+    // --- Storico tentativi ---
+    // role="list" esplicito su <ol> + role="listitem" su <li>: necessario per
+    // compatibilità VoiceOver iOS che in certi casi ignora la semantica nativa
+    // delle liste quando CSS altera il display.
     const storico = document.createElement('ol');
     storico.className = 'mastermind-storico';
-    storico.setAttribute('aria-label', 'Storico tentativi');
+    storico.setAttribute('role', 'list');
+    storico.setAttribute('aria-label', 'Tentativi precedenti');
+    // aria-live="polite": VoiceOver annuncia i nuovi tentativi automaticamente
     storico.setAttribute('aria-live', 'polite');
     storico.setAttribute('aria-atomic', 'false');
 
     stato.storiaTentativi.forEach((tentativo, idx) => {
       const riga     = document.createElement('li');
       riga.className = 'mastermind-riga-storico';
+      riga.setAttribute('role', 'listitem');
 
-      const simboliStr = tentativo.ipotesi.join(' · ');
+      const simboliStr = tentativo.ipotesi.join(', ');
       const feedbackVO = stato.feedbackParziale
-        ? `${tentativo.tori} ${tentativo.tori === 1 ? 'simbolo' : 'simboli'} in posizione corretta`
-        : `${tentativo.tori} in posizione corretta, ${tentativo.vacche} ${tentativo.vacche === 1 ? 'fuori posto' : 'fuori posto'}`;
+        ? `Simboli corretti: ${tentativo.tori}.`
+        : `Simboli corretti: ${tentativo.tori}. Posizione corretta: ${tentativo.tori}. Simboli fuori posto: ${tentativo.vacche}.`;
 
-      riga.setAttribute('aria-label', `Tentativo ${idx + 1}: ${simboliStr}. Risultato: ${feedbackVO}.`);
+      // aria-label esteso: formula + risultato dettagliato
+      riga.setAttribute('aria-label',
+        `Tentativo ${idx + 1}: ${simboliStr}. ${feedbackVO}`);
 
       const elSimb = document.createElement('span');
       elSimb.className = 'mastermind-simboli-storico';
       elSimb.setAttribute('aria-hidden', 'true');
-      elSimb.textContent = simboliStr;
+      elSimb.textContent = tentativo.ipotesi.join(' · ');
       riga.appendChild(elSimb);
 
       const elFeedback = document.createElement('span');
@@ -733,7 +846,15 @@ const MastermindFormule = {
       btn.type      = 'button';
       btn.className = 'mastermind-simbolo-pool';
       btn.textContent = simbolo.nome;
-      btn.setAttribute('aria-label', `Aggiungi ${simbolo.nome}`);
+      // aria-pressed: indica se il simbolo è già nell'ipotesi corrente
+      const volteNellIpotesi = stato.ipoTesiCorrente.filter(n => n === simbolo.nome).length;
+      const selezionato = volteNellIpotesi > 0;
+      btn.setAttribute('aria-pressed', String(selezionato));
+      btn.setAttribute('aria-label',
+        selezionato
+          ? `${simbolo.nome} — già inserito ${volteNellIpotesi} ${volteNellIpotesi === 1 ? 'volta' : 'volte'}. Aggiungi di nuovo.`
+          : `Aggiungi ${simbolo.nome}`
+      );
       btn.disabled = ipotesiPiena;
 
       btn.addEventListener('click', () => this._aggiungiSimbolo(simbolo.nome));
@@ -870,9 +991,15 @@ const MastermindFormule = {
       'mastermindFormule', categoria, 'teoriaArcana'
     );
     const messaggio = riuscito
-      ? `Mastermind completato. Risultato: ${categoria}. Progressione: +${punti}.`
-      : `Mastermind fallito. Nessuna progressione ottenuta.`;
-    _annunciaVoiceoverSafe(messaggio);
+      ? `Mastermind completato. Formula decifrata. Risultato: ${categoria}. Progressione: più ${punti} punti.`
+      : `Mastermind fallito. La formula segreta era: ${this.stato.sequenzaSegreta.join(', ')}. Nessuna progressione ottenuta.`;
+    // Usa annunciaVoiceover (ui.js) per il risultato finale — più affidabile di _annunciaVoiceoverSafe
+    // per annunci critici come la conclusione di un minigioco.
+    if (typeof annunciaVoiceover === 'function') {
+      annunciaVoiceover(messaggio);
+    } else {
+      _annunciaVoiceoverSafe(messaggio);
+    }
     if (this.stato.callbackFine) this.stato.callbackFine(categoria, punti);
   }
 };
@@ -2794,6 +2921,54 @@ const ScassinamentoIncantamento = {
 
 
 // ------------------------------------------------------------
+// PANNELLO TUTORIAL MINIGIOCO
+// Mostrato alla prima occorrenza di ogni minigioco.
+// Tracciamento via tutorialGiaVisto() / segnaTutorialVisto() in game-engine.js.
+// ------------------------------------------------------------
+function _mostraTutorialMinigioco(idMinigioco, nomeMinigioco, onProcedi) {
+  // Recupera il contenitore corrente del minigioco dal DOM
+  const contenitore = document.getElementById('contenuto-principale');
+  if (!contenitore) { onProcedi(); return; }
+
+  const testo = (typeof TESTI_TUTORIAL_MINIGIOCHI !== 'undefined' && TESTI_TUTORIAL_MINIGIOCHI[idMinigioco])
+    ? TESTI_TUTORIAL_MINIGIOCHI[idMinigioco]
+    : 'Leggi le istruzioni e premi il pulsante per iniziare.';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'minigioco-tutorial';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-labelledby', 'tutorial-titolo');
+
+  // Il pulsante è primo nel DOM — convenzione VoiceOver del progetto
+  const btnHoCapito = document.createElement('button');
+  btnHoCapito.type = 'button';
+  btnHoCapito.className = 'btn-primario';
+  btnHoCapito.textContent = 'Ho capito';
+  btnHoCapito.setAttribute('aria-label', 'Ho capito, avvia il minigioco');
+  btnHoCapito.addEventListener('click', () => {
+    segnaTutorialVisto(idMinigioco);
+    onProcedi();
+  });
+  dialog.appendChild(btnHoCapito);
+
+  const titolo = document.createElement('h3');
+  titolo.id = 'tutorial-titolo';
+  titolo.textContent = nomeMinigioco;
+  dialog.appendChild(titolo);
+
+  const descrizione = document.createElement('p');
+  descrizione.textContent = testo;
+  dialog.appendChild(descrizione);
+
+  contenitore.replaceChildren(dialog);
+  window.scrollTo(0, 0);
+  btnHoCapito.focus();
+  _annunciaVoiceoverSafe(`Tutorial: ${nomeMinigioco}. ${testo} Premi Ho capito per iniziare.`);
+}
+
+
+// ------------------------------------------------------------
 // API PUBBLICA DEI MINIGIOCHI
 // Punto di accesso unico per ui.js.
 // ------------------------------------------------------------
@@ -2804,35 +2979,61 @@ const Minigiochi = {
     const gradoArcana      = leggiGrado('arcana')      || 'Novizio';
     const gradoErudizione  = leggiGrado('erudizione')  || 'Allievo';
 
-    switch (idMinigioco) {
-      case 'memoryRune':
-        MemoryRune.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'minesweeperReagenti':
-        MinesweeperReagenti.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'mastermindFormule':
-        MastermindFormule.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'meccanicaSpellcasting':
-        MeccanicaSpellcasting.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'labirintoEquilibrio':
-        LabirintoEquilibrio.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'rebusAccessibile':
-        RebusAccessibile.avvia(contenitore, gradoErudizione, disciplina || null, callbackFine);
-        break;
-      case 'sblocaggioReagente':
-        ScassinamentoAlchemico.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      case 'dissolvenza':
-        ScassinamentoIncantamento.avvia(contenitore, gradoArcana, callbackFine);
-        break;
-      default:
-        console.warn('[Minigiochi] Minigioco non riconosciuto:', idMinigioco);
-        // Chiama la callback per evitare che l'UI rimanga bloccata
-        if (typeof callbackFine === 'function') callbackFine('fallimento', 0);
+    // Nomi visualizzati nel pannello tutorial
+    const nomiMinigiochi = {
+      memoryRune:            'Memory delle Rune',
+      minesweeperReagenti:   'Minesweeper dei Reagenti',
+      mastermindFormule:     'Mastermind delle Formule',
+      meccanicaSpellcasting: 'Meccanica di Spellcasting',
+      labirintoEquilibrio:   'Labirinto dell\'Equilibrio',
+      rebusAccessibile:      'Rebus Accessibile',
+      sblocaggioReagente:    'Sbloccaggio Reagente',
+      dissolvenza:           'Dissolvenza'
+    };
+
+    // Avvia effettivamente il minigioco scelto
+    const _avviaEffettivo = () => {
+      switch (idMinigioco) {
+        case 'memoryRune':
+          MemoryRune.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'minesweeperReagenti':
+          MinesweeperReagenti.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'mastermindFormule':
+          MastermindFormule.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'meccanicaSpellcasting':
+          MeccanicaSpellcasting.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'labirintoEquilibrio':
+          LabirintoEquilibrio.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'rebusAccessibile':
+          RebusAccessibile.avvia(contenitore, gradoErudizione, disciplina || null, callbackFine);
+          break;
+        case 'sblocaggioReagente':
+          ScassinamentoAlchemico.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        case 'dissolvenza':
+          ScassinamentoIncantamento.avvia(contenitore, gradoArcana, callbackFine);
+          break;
+        default:
+          console.warn('[Minigiochi] Minigioco non riconosciuto:', idMinigioco);
+          if (typeof callbackFine === 'function') callbackFine('fallimento', 0);
+      }
+    };
+
+    // Mostra il tutorial solo se non è già stato visto
+    const tutorialNecessario =
+      typeof tutorialGiaVisto === 'function' &&
+      !tutorialGiaVisto(idMinigioco) &&
+      nomiMinigiochi[idMinigioco];
+
+    if (tutorialNecessario) {
+      _mostraTutorialMinigioco(idMinigioco, nomiMinigiochi[idMinigioco], _avviaEffettivo);
+    } else {
+      _avviaEffettivo();
     }
   },
 

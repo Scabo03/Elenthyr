@@ -81,6 +81,10 @@ function _creaStatoIniziale() {
     // Flag: la sequenza di introduzione è già stata mostrata al giocatore
     introMostrata: false,
 
+    // Array degli id dei minigiochi per cui il tutorial è già stato mostrato.
+    // Il tutorial appare solo alla prima occorrenza di ogni minigioco.
+    tutorialVisti: [],
+
     // Avanzamenti di grado dei coetanei già processati (chiave: 'idPng_nuovoGrado')
     avanzamentiCoetanei: {},
 
@@ -1180,6 +1184,23 @@ function segnaIntroMostrata() {
   if (!stato) return;
   stato.introMostrata = true;
   salva();
+}
+
+// Segna un minigioco come già mostrato (tutorial visto).
+function segnaTutorialVisto(idMinigioco) {
+  if (!stato) return;
+  if (!Array.isArray(stato.tutorialVisti)) stato.tutorialVisti = [];
+  if (!stato.tutorialVisti.includes(idMinigioco)) {
+    stato.tutorialVisti.push(idMinigioco);
+    salva();
+  }
+}
+
+// Restituisce true se il tutorial per questo minigioco è già stato mostrato.
+function tutorialGiaVisto(idMinigioco) {
+  if (!stato) return false;
+  if (!Array.isArray(stato.tutorialVisti)) return false;
+  return stato.tutorialVisti.includes(idMinigioco);
 }
 
 // Restituisce true se l'intro è già stata mostrata o se il gioco è già avanzato.

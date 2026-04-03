@@ -746,18 +746,35 @@ function _gestisciLezioneEsame(slot, tipoEvento, statoCorrente) {
   const idDocente    = disciplina ? disciplina.docente : null;
 
   if (idMinigioco) {
-    // Le lezioni sono in modalità tutorial: reset tentativi per garantire
-    // il risultato ottimale al primo successo, senza penalità per i tentativi precedenti.
     if (tipoEvento === 'lezione') {
+      // Le lezioni sono in modalità tutorial: reset tentativi per garantire
+      // il risultato ottimale al primo successo, senza penalità per i tentativi precedenti.
       Minigiochi.resetTentativi(idMinigioco);
       Audio.riproduciVoiceline(idDocente, 'inizio_lezione');
+      completaSlot(slot.id);
+
+      // Mostra introduzione del docente prima del minigioco
+      const nomeDocente = idDocente && PERSONAGGI[idDocente] ? PERSONAGGI[idDocente].nome : null;
+      const testiIntro = (typeof TESTI_INTRO_LEZIONE !== 'undefined' && idDisciplina && TESTI_INTRO_LEZIONE[idDisciplina])
+        ? TESTI_INTRO_LEZIONE[idDisciplina]
+        : TESTI_EVENTI_OBBLIGATORI.lezione;
+      const indiceIntro = statoCorrente ? statoCorrente.giorno % testiIntro.length : 0;
+
+      _mostraIntroDocenteLezione(testiIntro[indiceIntro], nomeDocente, () => {
+        dom.contenutoPrincipale.replaceChildren();
+        Minigiochi.avvia(idMinigioco, dom.contenutoPrincipale, () => {
+          Audio.riproduciVoiceline(idDocente, 'fine_lezione');
+          const testiEvento = TESTI_EVENTI_OBBLIGATORI.lezione;
+          const indice = statoCorrente ? statoCorrente.giorno % testiEvento.length : 0;
+          _mostraTestoNarrativo(testiEvento[indice], _concludiEventoObbligatorio);
+        }, idDisciplina);
+      });
+      return;
     }
+
     completaSlot(slot.id);
     dom.contenutoPrincipale.replaceChildren();
     Minigiochi.avvia(idMinigioco, dom.contenutoPrincipale, () => {
-      if (tipoEvento === 'lezione') {
-        Audio.riproduciVoiceline(idDocente, 'fine_lezione');
-      }
       const testiEvento = TESTI_EVENTI_OBBLIGATORI[tipoEvento] || TESTI_EVENTI_OBBLIGATORI.lezione;
       const indice = statoCorrente ? statoCorrente.giorno % testiEvento.length : 0;
       _mostraTestoNarrativo(testiEvento[indice], _concludiEventoObbligatorio);
@@ -1238,6 +1255,57 @@ function _mostraMonologoCerimonia(nomeDocente, testoMonologo, onFine) {
 }
 
 
+// Mostra l'introduzione del docente prima di un minigioco a lezione.
+// nomeDocente: stringa o null (se null usa solo il testo narrativo).
+// testo: intro da mostrare.
+// onProcedi: callback invocata quando il giocatore preme "Inizia l'esercitazione".
+function _mostraIntroDocenteLezione(testo, nomeDocente, onProcedi) {
+  if (!dom.contenutoPrincipale) { if (onProcedi) onProcedi(); return; }
+
+  const contenitore = document.createElement('div');
+  contenitore.className = 'testo-narrativo';
+
+  if (nomeDocente) {
+    const boxDocente = document.createElement('div');
+    boxDocente.className = 'box-dialogo-png';
+    boxDocente.setAttribute('role', 'group');
+    boxDocente.setAttribute('aria-label', `${nomeDocente} introduce l'esercitazione:`);
+
+    const nomeEl = document.createElement('p');
+    nomeEl.className = 'png-nome';
+    nomeEl.setAttribute('aria-hidden', 'true');
+    nomeEl.textContent = nomeDocente;
+    boxDocente.appendChild(nomeEl);
+
+    const testoEl = document.createElement('p');
+    testoEl.className = 'png-testo';
+    testoEl.textContent = testo;
+    boxDocente.appendChild(testoEl);
+
+    contenitore.appendChild(boxDocente);
+  } else {
+    const paragrafo = document.createElement('p');
+    paragrafo.textContent = testo;
+    contenitore.appendChild(paragrafo);
+  }
+
+  const pulsante = document.createElement('button');
+  pulsante.className = 'pulsante-avanza';
+  pulsante.type = 'button';
+  pulsante.textContent = 'Inizia l\'esercitazione';
+  pulsante.setAttribute('aria-label', 'Inizia l\'esercitazione');
+  pulsante.addEventListener('click', () => {
+    Audio.avanza();
+    if (onProcedi) onProcedi();
+  });
+
+  contenitore.appendChild(pulsante);
+  dom.contenutoPrincipale.replaceChildren(contenitore);
+  window.scrollTo(0, 0);
+  pulsante.focus();
+}
+
+
 // Mostra un testo narrativo con pulsante di avanzamento
 function _mostraTestoNarrativo(testo, callback) {
   if (!dom.contenutoPrincipale) return;
@@ -1261,6 +1329,12 @@ function _mostraTestoNarrativo(testo, callback) {
 
   contenitore.appendChild(pulsante);
   dom.contenutoPrincipale.replaceChildren(contenitore);
+
+  // Riporta la pagina in cima prima del focus: dopo un minigioco la pagina può
+  // essere scrollata verso il basso. Senza il reset, il testo narrativo finisce
+  // dietro le fasce fisse mentre il pulsante (scrollato in vista) è l'unico
+  // elemento visibile sullo schermo.
+  window.scrollTo(0, 0);
 
   // Focus al pulsante Continua, che deve essere raggiungibile immediatamente
   pulsante.setAttribute('tabindex', '-1');

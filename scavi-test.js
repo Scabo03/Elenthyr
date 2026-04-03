@@ -26,6 +26,18 @@ function renderizzaSchermataScavi(contenitore) {
   pannello.setAttribute('role', 'main');
   pannello.setAttribute('aria-label', 'Pannello di test degli Scavi');
 
+  // Pulsante "Esci dagli Scavi" — primo elemento nel DOM e primo raggiungibile da VoiceOver
+  const pulsanteEsci = document.createElement('button');
+  pulsanteEsci.type = 'button';
+  pulsanteEsci.className = 'btn-primario';
+  pulsanteEsci.textContent = 'Esci dagli Scavi';
+  pulsanteEsci.setAttribute('aria-label', 'Esci dagli Scavi e torna al gioco');
+  pulsanteEsci.style.marginBottom = '1.5rem';
+  pulsanteEsci.addEventListener('click', () => {
+    renderizzaSchermataGiorno();
+  });
+  pannello.appendChild(pulsanteEsci);
+
   const titolo = document.createElement('h2');
   titolo.textContent = 'Gli Scavi — Pannello di Test';
   titolo.setAttribute('tabindex', '-1');
@@ -45,8 +57,10 @@ function renderizzaSchermataScavi(contenitore) {
   pannello.appendChild(_sezioneNavigazioneSchermate());
 
   contenitore.replaceChildren(pannello);
-  titolo.focus();
-  annunciaVoiceover('Pannello di test degli Scavi aperto. Sviluppo: questo strumento verrà rimosso nella versione finale.');
+
+  // Focus automatico al pulsante Esci — primo elemento interattivo del pannello
+  pulsanteEsci.focus();
+  annunciaVoiceover('Pannello di test degli Scavi. Primo pulsante: Esci dagli Scavi.');
 }
 
 
